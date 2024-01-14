@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "lib": ["esnext"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": false,
+    "jsx": "react",
+    "experimentalDecorators": true,
+    "noImplicitAny": false,
+    "typeRoots": ["./node_modules/@types"],
+    "outDir": "./dist",
+    "sourceMap": true
+  },
+  "include": ["src"],
+  "ts-node": {
+    "compilerOptions": {
+      "target": "ES6",
+      "module": "CommonJS",
+      "esModuleInterop": true,
+    },
+    "esm": true,
+    "experimentalSpecifierResolution": "node",
+    // ts-node 不支持 paths 选项，不能用 alias
+    // 需要安装 tsconfig-paths 库来支持
+    "require": ["tsconfig-paths/register"]
+  }
+}
