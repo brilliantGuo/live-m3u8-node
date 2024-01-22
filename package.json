@@ -34,8 +34,10 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@types/js-yaml": "^4.0.9",
     "axios": "^1.6.5",
     "dotenv": "^16.3.1",
+    "js-yaml": "^4.1.0",
     "koa": "^2.15.0",
     "koa-bodyparser": "^3.2.0",
     "koa-router": "^7.4.0",

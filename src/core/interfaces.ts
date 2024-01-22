@@ -23,12 +23,31 @@ export interface LiveInfo {
   /** 直播间推流链接 */
   liveUrlInfo: {
     /** 原画 */
-    origin: string;
+    origin: string
     /** 超高清 / 蓝光 */
-    ultraHd: string;
+    ultraHd: string
     /** 高清 */
-    hd: string;
+    hd: string
     /** 标清 */
-    sd: string;
+    sd: string
   }
+}
+
+/**
+ * 配置信息
+ */
+export interface UserConfig {
+  douyin: {
+    cookie?: string
+    users?: string[]
+  }
+}
+
+/**
+ * 配置文件信息
+ */
+export interface ConfigInfo {
+  dir: string
+  fileName: string
+  config: UserConfig
 }

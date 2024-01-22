@@ -1,4 +1,5 @@
 import fs from 'fs-extra';
+import path from 'path'
 import { exec } from 'child_process';
 import { logger } from '@/core/logger';
 
@@ -74,6 +75,43 @@ export async function delDir(path: string) {
     logger.warn('Util.System.delDir error', error);
     return;
   }
+}
+
+/**
+ * 递归获取某个路径下的所有文件夹和文件
+ *
+ * @param baseDir 要获取的文件夹下的路径
+ * @param ignoreSet 要忽略的文件名，匹配到的话就不加入路径
+ * @returns 文件路径列表
+ */
+export async function walkDirFunc(baseDir: string, ignoreStrs: string[]): Promise<string[]> {
+  const dirents = await fs.readdir(baseDir, { withFileTypes: true })
+  const tasks = dirents.map((dir) => {
+    const dirPath = path.join(baseDir, dir.name)
+    if (dir.isDirectory()) return walkDirFunc(dirPath, ignoreStrs)
+    const shouldIgnore = ignoreStrs.some((str) => dir.name.toLowerCase().indexOf(str.toLowerCase()) > -1)
+    return Promise.resolve(shouldIgnore ? [] : [dirPath])
+  })
+  const res = await Promise.all(tasks)
+  return res.reduce<string[]>((arr, curr) => [...arr, ...curr], [])
+}
+
+export interface WalkDirOptions {
+  /** 要忽略的文件名，只要带有这个字符串，都会忽略 */
+  ignores?: string[]
+}
+
+/**
+ * 递归获取某个路径下的所有文件夹和文件
+ *
+ * @param baseDir 要获取的文件夹下的路径
+ * @param opts 遍历配置
+ * @param opts.ignoreSet 要忽略的文件名，匹配到的话就不加入路径
+ * @returns 文件路径列表
+ */
+export function walkDir(baseDir: string, opts?: WalkDirOptions) {
+  const ignoreSet = opts?.ignores || []
+  return walkDirFunc(baseDir, ignoreSet)
 }
 
 const WHITE_COMMAND_LIST: RegExp[] = [/^(tnpm)|(npm)|(yarn)|(cd)|(cp)/];
