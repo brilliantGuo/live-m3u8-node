@@ -1,4 +1,5 @@
 import log4js from 'log4js'
+import { LOG_FILENAME } from '@/constants/path'
 
 /**
  * 封装 Logger 日志组件，收归 log 方法。
@@ -34,11 +35,11 @@ export class Logger {
           // 按天分隔日志
           type: 'dateFile',
           // 配置文件名
-          filename: 'logs/run.log',
+          filename: LOG_FILENAME,
           // 指定编码格式为 utf-8
           encoding: 'utf-8',
           // 日志文件按日期（天）切割
-          pattern: '-yyyy-MM-dd',
+          pattern: 'yyyy-MM-dd',
           // 回滚旧的日志文件时，保证以 .log 结尾
           keepFileExt: true,
           // 输出的日志文件名是都始终包含 pattern 日期结尾

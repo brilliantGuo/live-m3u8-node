@@ -1,5 +1,6 @@
 import { Middleware } from 'koa'
-import { CustomError, ErrorCode, ErrorCodeMsg } from '@/core/errors'
+import { ErrorCode, ErrorCodeMsg } from '@/constants/errors'
+import { CustomError } from '@/core/errors'
 import { Logger } from '@/core/logger'
 
 const logger = new Logger('ErrorHandlerMiddleware')

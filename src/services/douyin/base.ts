@@ -1,8 +1,12 @@
 import Axios from 'axios'
+import { ErrorCode } from '@/constants/errors'
 import { AXIOS_DEFAULT_CONFIG } from '@/core/request'
-import { CustomError, ErrorCode } from '@/core/errors'
+import { CustomError } from '@/core/errors'
+import { Logger } from '@/core/logger'
 import { getQueryString, getStringQuery } from '@/utils/url'
 import { getMsToken } from './sign'
+
+export const logger = new Logger('douyin')
 
 /**
  * 抖音接口请求所需 base query
