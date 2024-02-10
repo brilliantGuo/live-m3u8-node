@@ -1,7 +1,7 @@
 import Axios from 'axios'
 import { ErrorCode } from '@/constants/errors'
 import { AXIOS_DEFAULT_CONFIG } from '@/core/request'
-import { CustomError } from '@/core/errors'
+import { ServerError } from '@/core/errors'
 import { Logger } from '@/core/logger'
 import { getQueryString, getStringQuery } from '@/utils/url'
 import { getMsToken } from './sign'
@@ -71,17 +71,15 @@ axios.interceptors.request.use((config) => {
 axios.interceptors.response.use((res) => {
   const { status, statusText, data } = res
   if (status !== 200) {
-    throw new CustomError(ErrorCode.TEST, {
-      name: 'FetchError',
-      message: statusText
+    throw new ServerError(ErrorCode.FETCH_ERROR, {
+      data: { status, statusText }
     })
   }
 
   if (data.status_code !== 0) {
     const error = data.data as ErrorData
-    throw new CustomError(ErrorCode.PIPELINE, {
-      name: error.message,
-      message: error.prompts
+    throw new ServerError(ErrorCode.FETCH_BUSINESS_ERROR, {
+      data: error
     })
   }
 

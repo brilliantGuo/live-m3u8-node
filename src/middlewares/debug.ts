@@ -2,20 +2,30 @@ import { Middleware } from 'koa'
 
 export interface DebugOptions {
   name?: string
+  force?: boolean
 }
 
 export function debugMiddleware(opts?: DebugOptions): Middleware {
-  const { name = 'debugMiddleware' } = opts || {}
+  const { force } = opts || {}
   return async (ctx, next) => {
-    console.log(`[${name}].start`)
-    try {
-      await next()
-    } catch (error) {
-      console.log(`[${name}].error`, error)
-    }
-    console.log(`[${name}].end`)
-    const { state, query, params, request, message, method, headers, ip, ips } = ctx
-    ctx.body = {
+    await next()
+    const isDebug = ctx.query.debug === '1' || force
+    if (!isDebug) return
+    const {
+      method,
+      message,
+      request,
+      params,
+      query,
+      state,
+      headers,
+      ip,
+      ips,
+      origin,
+      originalUrl,
+      path,
+    } = ctx
+    const res = {
       method,
       message,
       body: request.body,
@@ -25,9 +35,13 @@ export function debugMiddleware(opts?: DebugOptions): Middleware {
       headers,
       ip,
       ips,
+      origin,
+      originalUrl,
+      path,
       response: ctx.body
       // cookies 是个对象，不能直接输出 body
       // cookies
     }
+    ctx.body = res
   }
 }

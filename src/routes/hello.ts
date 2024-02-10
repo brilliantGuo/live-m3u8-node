@@ -5,10 +5,14 @@ const router = new Router({
   prefix: '/hello'
 })
 
+const debugRoute = debugMiddleware({ force: true });
 router.get('/', (ctx) => {
   ctx.body = 'hello world'
 })
-router.get('/info', debugMiddleware())
-router.get('/info/:id', debugMiddleware())
+router.get('/info', debugRoute)
+router.get('/info/:id', debugRoute)
+router.get('/error', () => {
+  throw new Error('Hello World!')
+})
 
 export default router

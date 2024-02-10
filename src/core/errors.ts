@@ -1,35 +1,52 @@
 import { ErrorCode, ErrorCodeMsg } from '@/constants/errors'
 
-export class CustomError extends Error {
-  name = 'CustomError'
+export interface ServerErrorOptions {
+  rawError?: any
+  data?: any
+}
+
+export class ServerError extends Error {
+  name = 'ServerError'
   errorCode: ErrorCode
   errorMsg: string
+  data?: any
 
-  constructor(errorCode: ErrorCode, rawError?: Error) {
+  constructor(errorCode: ErrorCode, opts?: ServerErrorOptions) {
+    const rawError = opts?.rawError
     super(rawError?.message)
     this.errorCode = errorCode
     this.errorMsg = ErrorCodeMsg[errorCode]
+    this.data = opts?.data
+    // 如果传入了原始 Error，那么堆栈信息用报错的 Error 的信息
+    if (rawError?.stack) {
+      this.stack = rawError.stack
+    }
   }
 }
 
-type GetFirstElement<T extends any[]> = T extends [infer F, ...any[]] ? F : never
-type CheckFunction<T extends any> = T extends (...args: any[]) => any ? T : never
+export interface CatchErrorOptions {
+  errorCode: ErrorCode
+}
 
+/**
+ * 高阶函数，对传入的方法做 try catch 处理，出错则抛出 ServerError
+ * @param func
+ * @param opts
+ * @returns
+ */
+export function catchError<T extends (...args: any[]) => any>(errorCode: ErrorCode, func: T) {
+  return (...args: Parameters<T>): ReturnType<T> => {
+    try {
+      return func(...args)
+    } catch (error) {
+      if (error instanceof ServerError) {
+        throw error
+      }
 
-// type B = Parameters<number>
-
-// export function pipeline<T extends [(...args: any) => any, ErrorCode][]>(arrs: T) {
-//   type FirstFunc = CheckFunction<GetFirstElement<GetFirstElement<T>>>;
-//   return (...args: ) => arrs.reduce((res: any[] | CustomError, curr) => {
-//     if (res instanceof CustomError) return res
-//     try {
-//       const funcRes = curr[0](...res)
-//       return [funcRes]
-//     } catch (error) {
-//       const customError = error instanceof Error
-//         ? new CustomError(ErrorCode.PIPELINE, error)
-//         : new CustomError(ErrorCode.PIPELINE)
-//       return customError
-//     }
-//   }, args)
-// }
+      throw new ServerError(errorCode, {
+        rawError: error,
+        data: args
+      })
+    }
+  }
+}

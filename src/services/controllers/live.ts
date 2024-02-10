@@ -1,11 +1,14 @@
 import path from 'path'
-import { ConfigInfo, LiveInfo, LiveService, UserConfig } from '@/core/interfaces'
 import { USER_CONFIG_PATH, M3U8_OUTPUT_PATH } from '@/constants/path'
-import { isExists, writeFile } from '@/utils/file'
-import { getConfigInfoFromFile, getFileConfigs, getM3u8Content } from '../stdio'
-import { DouyinService } from '../douyin'
-import { flatten } from '@/utils/array'
 import { Platform } from '@/constants/platform'
+import { ConfigInfo, LiveInfo, LiveService } from '@/core/interfaces'
+import { Logger } from '@/core/logger'
+import { isExists, writeFile } from '@/utils/file'
+import { flatten } from '@/utils/array'
+import { DouyinService } from '../douyin'
+import { getConfigInfoFromFile, getFileConfigs, getM3u8Content } from '../stdio'
+
+const logger = new Logger('LiveController')
 
 export interface LiveControllerOptions {
   /** 指定读取配置的文件名，不传则拉取 static/configs 下所有文件配置 */
@@ -34,21 +37,28 @@ export class LiveController {
   static getLiveInfos = async (opts?: LiveControllerOptions) => {
     const { fileName, outputFile = false, outputType = 'json' } = opts || {}
     const configs = await LiveController.getFileConfig(fileName)
+    logger.log('getLiveInfos.getFileConfig', JSON.stringify(configs, null, 2))
     if (!configs) return
 
     const isOutputM3u8 = outputType === 'm3u8'
-    const tasks = configs.map(async (config) => {
-      const { fileName } = config
-      const liveInfos = await LiveController.getLiveInfosFromConfigInfo(config)
-      const content = isOutputM3u8 ? getM3u8Content(liveInfos) : JSON.stringify(liveInfos, null, 2)
-      if (outputFile) {
-        const outputFile = path.join(M3U8_OUTPUT_PATH, `${fileName}.${outputType}`)
-        await writeFile(outputFile, content)
+    const tasks = configs.map(async (config, index) => {
+      try {
+        const { fileName } = config
+        const liveInfos = await LiveController.getLiveInfosFromConfigInfo(config)
+        const content = isOutputM3u8 ? getM3u8Content(liveInfos) : JSON.stringify(liveInfos, null, 2)
+        if (outputFile) {
+          const outputFile = path.join(M3U8_OUTPUT_PATH, `${fileName}.${outputType}`)
+          await writeFile(outputFile, content)
+        }
+        return liveInfos
+      } catch (error) {
+        logger.error('getLiveInfos.tasks.error', { index, config }, error)
+        return []
       }
-      return liveInfos
     })
     const res = await Promise.all(tasks)
     const liveInfos = flatten(res)
+    logger.log('getLiveInfos.tasks.end', JSON.stringify({ isOutputM3u8, liveInfos }, null, 2))
     return isOutputM3u8 ? getM3u8Content(liveInfos) : liveInfos
   }
 
@@ -72,11 +82,15 @@ export class LiveController {
    */
   private static getLiveInfosFromConfigInfo = async (fileConfig: ConfigInfo) => {
     const { config } = fileConfig
+    const emptyLiveInfos: LiveInfo[] = []
     const tasks = LiveController.platforms.map((platform) => {
       const liveService = LiveController.serviceMap[platform]
       const serviceConfig = config[platform]
-      if (!serviceConfig) return [] as LiveInfo[]
-      return liveService.getLiveInfos(serviceConfig)
+      if (!serviceConfig) return emptyLiveInfos
+      return liveService.getLiveInfos(serviceConfig).catch((error) => {
+        logger.error('getLiveInfosFromConfigInfo.error', { platform, serviceConfig }, error)
+        return emptyLiveInfos
+      })
     })
     const res = await Promise.all(tasks)
     return flatten(res)

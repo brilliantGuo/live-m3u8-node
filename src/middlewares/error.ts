@@ -1,6 +1,6 @@
 import { Middleware } from 'koa'
 import { ErrorCode, ErrorCodeMsg } from '@/constants/errors'
-import { CustomError } from '@/core/errors'
+import { ServerError } from '@/core/errors'
 import { Logger } from '@/core/logger'
 
 const logger = new Logger('ErrorHandlerMiddleware')
@@ -16,7 +16,7 @@ export function errorHandlerMiddleware(opts?: ErrorMiddlewareOptions): Middlewar
       await next()
     } catch (error) {
       logger.error('ErrorHandlerMiddleware.catchError', error)
-      if (error instanceof CustomError) {
+      if (error instanceof ServerError) {
         ctx.body = {
           code: error.errorCode,
           data: error.errorMsg,

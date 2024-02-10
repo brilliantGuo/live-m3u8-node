@@ -1,6 +1,6 @@
 import Router, { IMiddleware } from 'koa-router'
+import { Logger } from '@/core/logger'
 import { LiveController, LiveControllerOptions } from '@/services'
-import { debugMiddleware } from '@/middlewares'
 
 interface RouterState {
   outputType?: LiveControllerOptions['outputType']
@@ -9,6 +9,7 @@ interface RouterState {
 type LiveMiddleware = IMiddleware<RouterState>
 
 const router = new Router<RouterState>()
+const logger = new Logger('LiveRouter')
 
 function getOutputType(type?: string): LiveControllerOptions['outputType'] {
   if (type === 'json') return 'json'
@@ -43,8 +44,9 @@ const liveMiddleware: LiveMiddleware = async (ctx) => {
   const { disableOutput } = params
   const { fileName, outputType: fileOutputType } = getFileInfo(params.fileName, params.outputType)
   const outputType = state.outputType || fileOutputType
-  console.log('liveMiddleware', { params, query, state, fileName, fileOutputType, outputType })
+  logger.log('liveMiddleware', { params, query, state, fileName, fileOutputType, outputType })
   const data = await LiveController.getLiveInfos({ fileName, outputType, outputFile: !disableOutput })
+  logger.log('liveMiddleware.getLiveInfos.data', data)
   if (outputType === 'm3u8' && typeof data === 'string') {
     ctx.set({
       'accept-ranges': 'bytes',
@@ -57,11 +59,11 @@ const liveMiddleware: LiveMiddleware = async (ctx) => {
   ctx.body = { code: 0, data }
 }
 
-router.get('/', debugMiddleware(), liveMiddleware)
-router.get('/json', debugMiddleware(), jsonMiddleware, liveMiddleware)
-router.get('/json/:fileName', debugMiddleware(), jsonMiddleware, liveMiddleware)
-router.get('/m3u8', debugMiddleware(), m3u8Middleware, liveMiddleware)
-router.get('/m3u8/:fileName', debugMiddleware(), m3u8Middleware, liveMiddleware)
-router.get('/:fileName', debugMiddleware(), liveMiddleware)
+router.get('/', liveMiddleware)
+router.get('/json', jsonMiddleware, liveMiddleware)
+router.get('/json/:fileName', jsonMiddleware, liveMiddleware)
+router.get('/m3u8', m3u8Middleware, liveMiddleware)
+router.get('/m3u8/:fileName', m3u8Middleware, liveMiddleware)
+router.get('/file/:fileName', liveMiddleware)
 
 export default router

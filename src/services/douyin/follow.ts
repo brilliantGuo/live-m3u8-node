@@ -2,8 +2,10 @@
  * 根据个人 Cookie 获取关注且已开播的主播的直播间信息
  */
 import { Platform } from '@/constants/platform'
-import { axios, SuccessData } from './base'
 import { LiveInfo } from '@/core/interfaces'
+import { catchError } from '@/core/errors'
+import { axios, SuccessData } from './base'
+import { ErrorCode } from '@/constants/errors'
 
 type FollowInfo = {
   /** 房间 id */
@@ -56,7 +58,7 @@ async function getFollowInfo(cookie: string) {
   return res.data.data.data
 }
 
-function getLiveInfo(followInfo: FollowInfo): LiveInfo {
+const getLiveInfo = catchError(ErrorCode.DOUYIN_GET_LIVE_INFO, (followInfo: FollowInfo): LiveInfo => {
   const { room } = followInfo
   const { stream_url: streamUrl, owner } = room
   const liveInfo = streamUrl.hls_pull_url_map || streamUrl.flv_pull_url_map
@@ -79,7 +81,7 @@ function getLiveInfo(followInfo: FollowInfo): LiveInfo {
       sd: liveInfo.SD2
     }
   }
-}
+})
 
 /**
  * 根据传入的 cookie 获取直播间信息
