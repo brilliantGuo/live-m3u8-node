@@ -3,8 +3,8 @@
  */
 import { Platform } from '@/constants/platform'
 import { LiveInfo } from '@/core/interfaces'
-import { catchError } from '@/core/errors'
-import { axios, SuccessData } from './base'
+import { funcErrorBoundary } from '@/core/errors'
+import { logger, axios, SuccessData } from './base'
 import { ErrorCode } from '@/constants/errors'
 
 type FollowInfo = {
@@ -45,6 +45,7 @@ type FollowInfo = {
 }
 
 async function getFollowInfo(cookie: string) {
+  logger.log('getFollowInfo.cookie', cookie)
   const res = await axios.get<SuccessData<FollowInfo[]>>('https://www.douyin.com/webcast/web/feed/follow', {
     headers: {
       cookie
@@ -54,11 +55,11 @@ async function getFollowInfo(cookie: string) {
       scene: 'aweme_pc_follow_top'
     }
   })
-
+  logger.log('getFollowInfo.cookie.success', cookie)
   return res.data.data.data
 }
 
-const getLiveInfo = catchError(ErrorCode.DOUYIN_GET_LIVE_INFO, (followInfo: FollowInfo): LiveInfo => {
+const getLiveInfo = funcErrorBoundary(ErrorCode.DOUYIN_GET_LIVE_INFO, (followInfo: FollowInfo): LiveInfo => {
   const { room } = followInfo
   const { stream_url: streamUrl, owner } = room
   const liveInfo = streamUrl.hls_pull_url_map || streamUrl.flv_pull_url_map

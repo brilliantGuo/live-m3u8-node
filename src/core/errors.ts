@@ -34,7 +34,7 @@ export interface CatchErrorOptions {
  * @param opts
  * @returns
  */
-export function catchError<T extends (...args: any[]) => any>(errorCode: ErrorCode, func: T) {
+export function funcErrorBoundary<T extends (...args: any[]) => any>(errorCode: ErrorCode, func: T) {
   return (...args: Parameters<T>): ReturnType<T> => {
     try {
       return func(...args)
