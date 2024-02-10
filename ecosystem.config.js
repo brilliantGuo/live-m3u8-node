@@ -5,11 +5,12 @@ module.exports = {
   apps: [
     {
       name,
-      script: path.resolve(__dirname, './dist/index.js'),
+      script: path.resolve(__dirname, './index.js'),
       instances: require('os').cpus().length,
       autorestart: true,
       watch: true,
       env_production: {
+        IS_PM2: true,
         NODE_ENV: 'production',
         PORT: 8080
       }

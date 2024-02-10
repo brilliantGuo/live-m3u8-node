@@ -1,6 +1,6 @@
 import log4js, { Configuration } from 'log4js'
 import { LOG_FILENAME } from '@/constants/path'
-import { IS_PROD } from '@/config'
+import { IS_PROD, IS_PM2 } from '@/config'
 
 const DEFAULT_CONFIGURATION: Configuration = {
   appenders: {
@@ -31,7 +31,9 @@ const DEFAULT_CONFIGURATION: Configuration = {
       appenders: ['stdout', 'file'],
       level: 'debug'
     }
-  }
+  },
+  pm2: IS_PM2,
+  pm2InstanceVar: 'INSTANCE_ID'
 } as const
 
 export interface LoggerOptions {
@@ -60,11 +62,6 @@ export class Logger {
 
   private logger: log4js.Logger
 
-  /** 将跨行的字符串转成一行 */
-  formatString = (msg: string) => Logger.formatString(msg)
-  /** 将 Error 转成日志能打印的字符串 */
-  formatError = (error: any) => Logger.formatError(error)
-
   constructor(name: string, opts?: LoggerOptions) {
     const { default: defaultCates, dev: devCates } = DEFAULT_CONFIGURATION.categories
     log4js.configure({
@@ -78,25 +75,44 @@ export class Logger {
     this.logger = log4js.getLogger(name)
   }
 
+  /** 将跨行的字符串转成一行 */
+  public formatString = (msg: string) => Logger.formatString(msg)
+  /** 将 Error 转成日志能打印的字符串 */
+  public formatError = (error: any) => Logger.formatError(error)
+
   /**
    * 普通日志上报，仅存在本地磁盘，用于追溯链路日志，方便查询链路信息，尽管报。
    */
-  public log = (msg: any, ...args: any[]) => {
-    this.logger.info(msg, ...args)
+  public log = (...args: any[]) => {
+    const msg = this.formatNativeMsg(args)
+    this.logger.info(msg)
   }
 
   /**
    * 不重要的错误日志上报，仅存在本地磁盘，用于追溯链路日志。
    */
-  public warn = (msg: any, ...args: any[]) => {
-    this.logger.warn(msg, ...args)
+  public warn = (...args: any[]) => {
+    const msg = this.formatNativeMsg(args)
+    this.logger.warn(msg)
   }
 
   /**
    * 错误日志上报，现网下会上报到日志服务平台，方便及时发现异常。
    */
-  public error = (msg: any, ...args: any[]) => {
-    this.logger.error(msg, ...args)
+  public error = (...args: any[]) => {
+    const msg = this.formatNativeMsg(args)
+    this.logger.error(msg)
+  }
+
+  private formatNativeMsg = (msgs: any[]) => {
+    // 如无必要，尽量避免使用 JSON.stringify
+    const formattedMsg = msgs.map((msg) => {
+      if (typeof msg !== 'object') return msg
+      if (Array.isArray(msg)) return String(msg)
+      return JSON.stringify(msg)
+    })
+    const msg = String(formattedMsg).replace(',', ', ')
+    return msg
   }
 }
 

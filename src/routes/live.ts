@@ -44,7 +44,7 @@ const liveMiddleware: LiveMiddleware = async (ctx) => {
   const { disableOutput } = params
   const { fileName, outputType: fileOutputType } = getFileInfo(params.fileName, params.outputType)
   const outputType = state.outputType || fileOutputType
-  logger.log('liveMiddleware', { params, query, state, fileName, fileOutputType, outputType })
+  logger.log('liveMiddleware.receive', { params, query, state, fileName, fileOutputType, outputType })
   const data = await LiveController.getLiveInfos({ fileName, outputType, outputFile: !disableOutput })
   logger.log('liveMiddleware.getLiveInfos.success!')
   if (outputType === 'm3u8' && typeof data === 'string') {
