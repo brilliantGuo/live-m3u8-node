@@ -42,7 +42,7 @@ export interface LiveInfo {
  */
 export interface ServiceConfig {
   /** 用户的登录态，以 cookie 为主，通过 cookie 调用后端接口获取关注主播相关数据 */
-  cookie?: string
+  cookies?: string[]
   /** 需要拉取的用户的 uid，根据这些字段拉取用户开播信息 */
   users?: string[]
 }

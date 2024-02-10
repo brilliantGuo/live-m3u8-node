@@ -77,9 +77,14 @@ axios.interceptors.response.use((res) => {
   }
 
   if (data.status_code !== 0) {
-    const error = data.data as ErrorData
+    const { headers, params, url } = res.config
     throw new ServerError(ErrorCode.FETCH_BUSINESS_ERROR, {
-      data: error
+      data: {
+        data: data.data as ErrorData,
+        headers,
+        params,
+        url
+      }
     })
   }
 
