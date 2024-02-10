@@ -18,7 +18,18 @@ export const DouyinService: LiveService = {
     // TODO 根据用户 id 获取用户开播信息待开发
     // if (config.users)
 
+    const liveInfoSet = new Set<string>()
     const res = await Promise.all(tasks)
-    return flatten(res)
+    return flatten(res, {
+      filter(liveInfo) {
+        const { id } = liveInfo.roomInfo
+        if (liveInfoSet.has(id)) {
+          logger.log('DouyinService.getLiveInfos.liveInfoSet.hasID', id)
+          return false
+        }
+        liveInfoSet.add(id)
+        return true
+      }
+    })
   }
 }
