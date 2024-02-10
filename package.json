@@ -7,7 +7,7 @@
     "eslint": "eslint --ext .js,.jsx,.ts,.tsx src/",
     "eslint-fix": "eslint --ext .js,.jsx,.ts,.tsx --fix src/",
     "build": "rm -rf dist && tsc",
-    "pro": "cross-env NODE_ENV=production pm2 start ecosystem.config.js --env production",
+    "prod": "cross-env NODE_ENV=production pm2 start ecosystem.config.js --env production",
     "restart": "cross-env NODE_ENV=production pm2 restart ecosystem.config.js --env production",
     "start": "cross-env NODE_ENV=development nodemon",
     "stop": "pm2 stop ecosystem.config.js",
