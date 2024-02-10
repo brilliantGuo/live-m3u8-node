@@ -1,7 +1,11 @@
+import { Platform } from '@/constants/platform'
+
 /**
  * 获取直播间所需信息
  */
 export interface LiveInfo {
+  /** 直播平台名字 */
+  platform: Platform;
   /** 直播间相关信息 */
   roomInfo: {
     /** 直播 ID */
@@ -34,13 +38,20 @@ export interface LiveInfo {
 }
 
 /**
- * 配置信息
+ * Service 层需要收到的数据字段，通过这些字段去拉取相关接口
+ */
+export interface ServiceConfig {
+  /** 用户的登录态，以 cookie 为主，通过 cookie 调用后端接口获取关注主播相关数据 */
+  cookie?: string
+  /** 需要拉取的用户的 uid，根据这些字段拉取用户开播信息 */
+  users?: string[]
+}
+
+/**
+ * 定义用户填写的配置信息，以 static/config/*.yaml 配置为准
  */
 export interface UserConfig {
-  douyin: {
-    cookie?: string
-    users?: string[]
-  }
+  [Platform.Douyin]?: ServiceConfig
 }
 
 /**
@@ -50,4 +61,12 @@ export interface ConfigInfo {
   dir: string
   fileName: string
   config: UserConfig
+}
+
+/**
+ * 定义直播 Service 需要实现的功能
+ */
+export interface LiveService {
+  /** 获取根据 cookie 关注主播和特定用户 uid 的直播信息的接口 */
+  getLiveInfos: (config: ServiceConfig) => Promise<LiveInfo[]>;
 }

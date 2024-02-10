@@ -1,8 +1,8 @@
 import Axios from 'axios'
 import { AXIOS_DEFAULT_CONFIG } from '@/core/request'
+import { CustomError, ErrorCode } from '@/core/errors'
 import { getQueryString, getStringQuery } from '@/utils/url'
 import { getMsToken } from './sign'
-import { CustomError, ErrorCode } from '@/core/errors'
 
 /**
  * 抖音接口请求所需 base query

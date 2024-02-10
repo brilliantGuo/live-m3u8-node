@@ -3,7 +3,7 @@ import log4js from 'log4js'
 /**
  * 封装 Logger 日志组件，收归 log 方法。
  */
-export default class Logger {
+export class Logger {
   static getLogger(name: string) {
     return new Logger(name)
   }
@@ -34,7 +34,7 @@ export default class Logger {
           // 按天分隔日志
           type: 'dateFile',
           // 配置文件名
-          filename: 'run.log',
+          filename: 'logs/run.log',
           // 指定编码格式为 utf-8
           encoding: 'utf-8',
           // 日志文件按日期（天）切割
@@ -85,4 +85,5 @@ export default class Logger {
   }
 }
 
-export const logger = new Logger('')
+export const logger = new Logger('App')
+export default Logger

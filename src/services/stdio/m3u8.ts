@@ -1,3 +1,4 @@
+import { PLATFORM_NAME } from '@/constants/platform';
 import { LiveInfo } from '@/core/interfaces'
 
 /**
@@ -8,7 +9,7 @@ import { LiveInfo } from '@/core/interfaces'
 function getM3u8Snippet(liveInfo: LiveInfo) {
   const { liveUrlInfo, userInfo, roomInfo } = liveInfo;
   const { origin, ultraHd, hd, sd } = liveUrlInfo
-  const group = '抖音'
+  const group = PLATFORM_NAME[liveInfo.platform]
   const title = `(${userInfo.nickname})${roomInfo.title}`
   const url = origin || ultraHd || hd || sd
   return `#EXTINF:-1 tvg-logo="${roomInfo.cover}" group-title="${group}", ${title}\n${url}`

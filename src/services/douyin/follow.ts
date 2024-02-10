@@ -1,6 +1,7 @@
 /**
  * 根据个人 Cookie 获取关注且已开播的主播的直播间信息
  */
+import { Platform } from '@/constants/platform'
 import { axios, SuccessData } from './base'
 import { LiveInfo } from '@/core/interfaces'
 
@@ -60,6 +61,7 @@ function getLiveInfo(followInfo: FollowInfo): LiveInfo {
   const { stream_url: streamUrl, owner } = room
   const liveInfo = streamUrl.hls_pull_url_map || streamUrl.flv_pull_url_map
   return {
+    platform: Platform.Douyin,
     roomInfo: {
       id: followInfo.web_rid,
       title: room.title,

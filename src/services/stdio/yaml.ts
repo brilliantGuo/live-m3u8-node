@@ -16,10 +16,24 @@ function getPathInfo(pathStr: string): PathInfo {
   return { dir, fileName }
 }
 
-async function readUserConfig(filePath: string) {
+export async function getUserConfig(filePath: string) {
   const content = await readFile(filePath)
   const config = yaml.load(content)
   return config as UserConfig
+}
+
+/**
+ * 指定文件路径，返回 ConfigInfo 配置文件信息。
+ * 注意此方法不会对文件内容做校验，因此传入的路径文件需要符合 ConfigInfo 格式。
+ *
+ * @param filePath 文件路径
+ * @returns
+ */
+export async function getConfigInfoFromFile(filePath: string): Promise<ConfigInfo | undefined> {
+  const pathInfo = getPathInfo(filePath)
+  const config = await getUserConfig(filePath)
+  if (!config) return
+  return { ...pathInfo, config }
 }
 
 /**
@@ -29,12 +43,7 @@ export async function getFileConfigs() {
   const files = await walkDir(USER_CONFIG_PATH, {
     ignores: ['.gitkeep']
   })
-  const tasks = files.map(async (filePath) => {
-    const pathInfo = getPathInfo(filePath)
-    const config = await readUserConfig(filePath)
-    if (!config) return
-    return { ...pathInfo, config }
-  })
+  const tasks = files.map(getConfigInfoFromFile)
   const res = await Promise.all(tasks)
   const configs = res.filter(Boolean) as ConfigInfo[]
   return configs
