@@ -1,6 +1,10 @@
 import log4js, { Configuration } from 'log4js'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
 import { LOG_FILENAME } from '@/constants/path'
-import { IS_PROD, IS_PM2 } from '@/config'
+import { IS_PROD, IS_PM2, PM_ID } from '@/config'
+
+dayjs.extend(utc)
 
 const DEFAULT_CONFIGURATION: Configuration = {
   appenders: {
@@ -34,7 +38,7 @@ const DEFAULT_CONFIGURATION: Configuration = {
   },
   pm2: IS_PM2,
   pm2InstanceVar: 'INSTANCE_ID'
-} as const
+}
 
 export interface LoggerOptions {
   devLog?: boolean
@@ -60,6 +64,7 @@ export class Logger {
     return String(error)
   }
 
+  private name: string
   private logger: log4js.Logger
 
   constructor(name: string, opts?: LoggerOptions) {
@@ -72,6 +77,7 @@ export class Logger {
         [name]: opts?.devLog && !IS_PROD ? devCates : defaultCates
       }
     })
+    this.name = name
     this.logger = log4js.getLogger(name)
   }
 
@@ -84,6 +90,10 @@ export class Logger {
    * 普通日志上报，仅存在本地磁盘，用于追溯链路日志，方便查询链路信息，尽管报。
    */
   public log = (...args: any[]) => {
+    if (IS_PM2) {
+      console.log(this.getPM2LogPrefix('INFO'), ...args)
+      return
+    }
     const msg = this.formatNativeMsg(args)
     this.logger.info(msg)
   }
@@ -92,6 +102,10 @@ export class Logger {
    * 不重要的错误日志上报，仅存在本地磁盘，用于追溯链路日志。
    */
   public warn = (...args: any[]) => {
+    if (IS_PM2) {
+      console.warn(this.getPM2LogPrefix('WARN'), ...args)
+      return
+    }
     const msg = this.formatNativeMsg(args)
     this.logger.warn(msg)
   }
@@ -100,8 +114,17 @@ export class Logger {
    * 错误日志上报，现网下会上报到日志服务平台，方便及时发现异常。
    */
   public error = (...args: any[]) => {
+    if (IS_PM2) {
+      console.error(this.getPM2LogPrefix('ERROR'), ...args)
+      return
+    }
     const msg = this.formatNativeMsg(args)
     this.logger.error(msg)
+  }
+
+  private getPM2LogPrefix = (level: string) => {
+    const date = dayjs().utcOffset(8).format('YYYY-MM-DDTHH:mm:ss.SSS');
+    return `[${date}][${PM_ID}][${level}][${this.name}]`
   }
 
   private formatNativeMsg = (msgs: any[]) => {

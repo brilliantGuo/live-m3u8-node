@@ -6,6 +6,11 @@ import { logger } from './core/logger'
 import { ROUTERS } from './routes'
 import { debugMiddleware, errorHandlerMiddleware, loggerMiddleware } from './middlewares'
 
+process.on('SIGINT', () => {
+  logger.log('process.on.SIGINT, now exit.')
+  process.exit(0);
+});
+
 const app = new Koa()
 
 app.use(loggerMiddleware())
@@ -17,5 +22,4 @@ ROUTERS.forEach((router) => {
   app.use(router.allowedMethods())
 })
 app.listen(PORT)
-console.log(`应用启动成功！`, { PROJECT_DIR, PORT, NODE_ENV, IS_PM2 })
 logger.log(`应用启动成功！`, { PROJECT_DIR, PORT, NODE_ENV, IS_PM2 })
