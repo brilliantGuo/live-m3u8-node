@@ -1,0 +1,14 @@
+.history
+.vscode
+dist
+logs
+node_modules
+static
+
+.editorconfig
+.eslintignore
+.eslintrc.js
+.gitignore
+.postcssrs.js
+.prettierrc.js
+commitlint.config.js

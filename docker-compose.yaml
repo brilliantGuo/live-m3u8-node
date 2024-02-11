@@ -1,0 +1,15 @@
+version: "3"
+services:
+  m3u8-node:
+    image: live-m3u8-node:v1
+    ports:
+      - 8080:8080
+    volumes:
+      - ./static:/data/app/static
+      - ./logs:/data/app/logs
+    environment:
+      - NODE_ENV=production
+    restart: always
+    user: node
+    hostname: m3u8-node
+    container_name: m3u8-node
